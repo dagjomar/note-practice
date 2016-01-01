@@ -2,6 +2,8 @@
 
 Practice reading and playing notes
 
+![Screencapture GIF](preview.gif)
+
 ### Setup
 You need git and npm. Bower and Brunch should be installed locally when running `npm install`
 
