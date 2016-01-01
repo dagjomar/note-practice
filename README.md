@@ -18,3 +18,7 @@ This builds the project and starts a local server for development purposes at `h
 Run `npm run-script build`
 
 This builds the project with production settings and outputs into the `public` directory
+
+### Made possible by
+- https://github.com/cwilso/PitchDetect
+- https://github.com/markmarijnissen/PitchDetect
