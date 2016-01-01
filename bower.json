@@ -1,0 +1,22 @@
+{
+  "name": "note-practice",
+  "description": "Practice reading and playing notes",
+  "main": "",
+  "authors": [
+    "Dag Jomar <dagjomar@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/dagjomar/note-practice",
+  "moduleType": [],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "flexboxgrid": "~6.3.0"
+  }
+}

@@ -1,0 +1,160 @@
+<html>
+<head>
+
+        <script src="/resources/javascripts/vendor.js"></script>
+        <script src="/resources/javascripts/app.js"></script>
+        <script src="/test/javascripts/test.js"></script>
+</head>
+<body>
+
+Tests...
+
+<script>
+    var Normalizer = require("DetectorNormalizer");
+    var MockDetector = require("test/MockDetector");
+    var PitchDetect = require('PitchDetect/PitchDetect');
+
+    var mockDetector = new MockDetector();
+    
+
+
+    function testMock1(){
+        var normalizer = new Normalizer(mockDetector);
+        console.log('@testMock1');
+        mockDetector.fakeTriggers(['B3','B4','B3','B4','B4','B4','B4','B4','B4','B4','B4','B4','B4','B4','B4','B4','B4','B4','B4','B4','B4'], 20);
+    };
+
+    function testMock2(){
+        var normalizer = new Normalizer(mockDetector);
+        console.log('@testMock2');
+        mockDetector.fakeTriggers(["D5"], 20);
+        setTimeout(function(){
+            mockDetector.fakeTriggers(["B4", "B3", "B4", "B3", "B4", "B4", "B4", "B4"], 10);
+        }, 120);
+
+    };
+
+    function testMock3(){
+        var normalizer = new Normalizer(mockDetector);
+        console.log('@testMock3 - should not give an onPredicted event because predicted is null');
+
+        normalizer.events.on('onPredicted', function(e, a,b){
+            console.log('@normalizer onDetected event');
+        });
+
+        setTimeout(function(){
+            mockDetector.fakeTriggers(["B4", "B3", "B4", "B3", "B4", "B4", "B4", "B4"], 10);
+        }, 120);
+        setTimeout(function(){
+            mockDetector.fakeTriggers(["B4", "B3", "B4", "B3", "B4", "B4", "B4", "B4"], 10);
+        }, 1120);
+        normalizer.setPredicted(null);
+
+    };
+
+    function testMock4(){
+        var normalizer = new Normalizer(mockDetector);
+        console.log('@testMock4 - should give a single onPredicted event after predicted value is set to B4');
+        normalizer.setPredicted(null);
+
+        normalizer.events.on('onPredicted', function(e, a,b){
+            console.log('@normalizer onDetected event',a);
+        });
+        setTimeout(function(){
+            mockDetector.fakeTriggers(["B4", "B3", "B4", "B3", "B4", "B4", "B4", "B4"], 10);
+        }, 120);
+        setTimeout(function(){
+            normalizer.setPredicted('B4');
+            mockDetector.fakeTriggers(["B4", "B3", "B4", "B3", "B4", "B4", "B4", "B4"], 10);
+        }, 1120);
+
+    };
+
+    function testReal1(){
+        var pitchDetect = new PitchDetect();
+            var normalizer = new Normalizer(pitchDetect);
+            pitchDetect.init();
+            console.log('@testReal1');
+    };
+
+    function testReal2(){
+        var pitchDetect = new PitchDetect();
+            var normalizer = new Normalizer(pitchDetect);
+            pitchDetect.init();
+            console.log('@testReal2 - will alternate predicted inputs between A4 and B4 for 10 seconds');
+
+
+            normalizer.events.on('onPredicted', function(e, a,b){
+                console.log('@normalizer onDetected event',a);
+            });
+
+            var run = true;
+            setTimeout(function(){ run = false; }, 10000);
+
+            function recursiveRun(a){
+                if(run === false){
+                    console.log('run === false - exiting recursive loop');
+                    normalizer.setPredicted(null);
+                    return;
+                }
+                var b;
+                if(a === 'B4'){
+                    b = 'C5';
+                }else{
+                    b = 'B4';
+                }
+
+                console.log('setting predicted to ' + a);
+                normalizer.setPredicted(a);
+                setTimeout(function(){
+                    recursiveRun(b);
+                }, 2000);
+            }
+
+            recursiveRun('B4');
+    };
+
+    function testParseBuffer1(){
+        var buffer = ["D5", "B4", "B4", "B4", "B4", "B3", "B4", "B3", "B4"];
+        var normalizer = new Normalizer(mockDetector);
+        var scored = normalizer.scoreBuffer(buffer, 'B4');
+        console.log('buffer scored against predicted ('+ 'B4' +') : ', scored);
+    };
+    function testParseBuffer2(){
+        var normalizer = new Normalizer(mockDetector);
+        var buffers = [
+            {predicted: 'B4', buffer: ["B3"]},
+            {predicted: 'B4', buffer: ["B4"]},
+            {predicted: 'B4', buffer: ["D3", "C4"]},
+            {predicted: 'B4', buffer: ["B3", "B4"]},
+            {predicted: 'B4', buffer: ["D3", "B4", "E4"]},
+            {predicted: 'B4', buffer: ["B3", "B4", "B4"]},
+            {predicted: 'B4', buffer: ["D5", "B4", "B4", "B4", "B4", "B3", "B4", "B3", "B4"]},
+            {predicted: 'B4', buffer: ["B3","B4","B4","B4","B4","B4","B4","B4","B4","B4","B4","B4","B4","B4","B4","B4","B4","B4","B4"]},
+            {predicted: 'B4', buffer: ["D3", "B4", "B3", "B4", "B4", "B3", "B4", "B3", 'E9', "B4"]}
+        ]
+        $.each(buffers, function(i, test){
+            var scored = normalizer.scoreBuffer(test.buffer, test.predicted);
+            console.log('compared buffer: ' , test.buffer);
+            if(scored >= 0.8){
+                console.log('SUCCESS buffer scored against predicted ('+ test.predicted +') : ', scored);
+            }else{
+                console.log('FAIL buffer scored against predicted ('+ test.predicted +') : ', scored);
+            }
+        });
+    };
+
+    //testMock1();
+    //testMock2();
+    //testReal1();
+    //testParseBuffer1();
+    //testParseBuffer2();
+    //testMock3();
+    //testMock4();
+    testReal2();
+
+</script>
+
+</body>
+
+</html>
